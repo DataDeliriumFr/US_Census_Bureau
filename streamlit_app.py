@@ -33,6 +33,7 @@ if country:
         df2 = pd.DataFrame(columns=["Year", "Number of Births"])
         df2["Year"] = 2021 - df1["AGE"]
         df2["Number of Births"] = df1["POP"]
+        df2.style.format({"Number of Births": lambda x :"{:,}".format(x)})
         df2 = df2.set_index("Year")
 
         plt.figure(figsize=(20, 7))
@@ -50,8 +51,7 @@ if country:
         st.download_button(label="Download Graph", data=img, file_name=f"U.S. Census Bureau - Yearly Birth Rate - {country}.png", mime="png")
         
         with st.expander(f"View data of {country}"):
-            style = df2.style.format({"Number of Births": lambda x :"{:,}".format(x)})
-            st.dataframe(style)
+            st.dataframe(df2)
 
     except (AttributeError):
         st.write("")
