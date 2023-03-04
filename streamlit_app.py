@@ -34,7 +34,7 @@ if country:
         df2["Year"] = 2021 - df1["AGE"]
         df2["Number of Births"] = df1["POP"]
         df2.style.format({"Number of Births": lambda x :"{:,}".format(x)})
-        df2 = df2.set_index("Year")
+        # df2 = df2.set_index("Year")
 
         plt.figure(figsize=(20, 7))
         sns.barplot(data=df2, x=df2.index, y=df2["Number of Births"], color="#226094")
