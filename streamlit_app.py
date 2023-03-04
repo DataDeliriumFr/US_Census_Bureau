@@ -50,7 +50,7 @@ if country:
         st.download_button(label="Download Graph", data=img, file_name=f"U.S. Census Bureau - Yearly Birth Rate - {country}.png", mime="png")
         
         with st.expander(f"View data of {country}"):
-            style = df2.style.format({"Year": lambda x :"{:.}".format(x)})
+            style = df2.style.format({"Number of Births": lambda x :"{:,.}".format(x)})
             st.dataframe(style)
 
     except (AttributeError):
