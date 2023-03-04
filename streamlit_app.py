@@ -33,7 +33,6 @@ if country:
         df2 = pd.DataFrame(columns=["Year", "Number of Births"])
         df2["Year"] = 2021 - df1["AGE"]
         df2["Number of Births"] = df1["POP"]
-        df2.style.format({"Year": lambda x :"{:}".format(x)})
         df2.style.format({"Number of Births": lambda x :"{:,}".format(x)})
         df2 = df2.set_index("Year")
 
