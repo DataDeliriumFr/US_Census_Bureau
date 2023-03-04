@@ -51,7 +51,7 @@ if country:
         st.download_button(label="Download Graph", data=img, file_name=f"U.S. Census Bureau - Yearly Birth Rate - {country}.png", mime="png")
         
         with st.expander(f"View data of {country}"):
-                st.dataframe(df2)
+            st.dataframe(df2)
 
     except (AttributeError):
         st.write("")
