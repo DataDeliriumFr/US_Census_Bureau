@@ -48,11 +48,11 @@ if country:
 
         col1, col2, col3, col4 = st.columns(4)
         with col2:
-            st.metric(label="Min. Year",
+            st.metric(label="Year Min. Births",
                       value=df2["Number of Births"].idxmin(),
                       delta=None)
         with col4:
-            st.metric(label="Max. Year",
+            st.metric(label="Year Max. Births",
                       value=df2["Number of Births"].idxmax(),
                       delta=None)
         st.write("")
