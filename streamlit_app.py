@@ -7,14 +7,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import io
 
-favicon = """
-https://www.google.com/url?sa=i&url=https%3A%2F%2Fthenounproject.
-com%2Fbrowse%2Ficons%2Fterm%2Fcensus%2F&psig=AOvVaw3yTDTEHm_8LY-Evos9Qc2f&ust=
-1678097795774000&source=images&cd=vfe&ved=0CBAQjRxqFwoTCKCpis7HxP0CFQAAAAAdAAAAABAP
-"""
 st.set_page_config(
     page_title="U.S. Census Bureau App",
-    page_icon=favicon,
     layout="centered"
 )
 
@@ -27,6 +21,7 @@ for country in countries:
     country_list.append(name)
 
 country = st.selectbox("Select country to visualize data :", country_list)
+
 st.write("")
 
 if country:
@@ -40,9 +35,12 @@ if country:
         df1["AGE"] = df1["AGE"].astype("int")
         df1["POP"] = df1["POP"].astype("int")
 
-        df2 = pd.DataFrame(columns=["Year", "Number of Births"])
+        df2 = pd.DataFrame(columns=["Year", "Number of Births", "TempCalculation", "Progression"])
         df2["Year"] = 2021 - df1["AGE"]
         df2["Number of Births"] = df1["POP"]
+        df2["TempCalculation"] = df2["Number of Births"].shift(-1)
+        df2["Progression"] = round((df2["Number of Births"] - df2["TempCalculation"]) / df2["TempCalculation"], 2)
+        df2 = df2.drop("TempCalculation", axis=1)
         df2.style.format({"Number of Births": lambda x: "{:,}".format(x)})
         df2 = df2.set_index("Year")
 
@@ -70,15 +68,19 @@ if country:
         st.pyplot()
 
         st.download_button(label="Download Graph",
-                            data=img,
-                            file_name=f"U.S. Census Bureau - Yearly Birth Rate - {country}.png",
-                            mime="png"
-                            )
+                           data=img,
+                           file_name=f"U.S. Census Bureau - Yearly Birth Rate - {country}.png",
+                           mime="png"
+                           )
 
         st.write("")
+
         with st.expander(f"View data of {country}"):
-            st.dataframe(data=df2,
-                         use_container_width=True)
+            # Style bars inside cells of Number of Births column
+            # df2_style = df2.style.bar(subset=["Number of Births"], axis=0, cmap="Blues")
+            # To get styling to work with Streamlit 1.10.0, convert the styled dataframe to HTML
+            # st.write(df2_style.to_html(escape=False), unsafe_allow_html=True)
+            st.dataframe(data=df2, use_container_width=True)
 
     except AttributeError:
         st.write("")
