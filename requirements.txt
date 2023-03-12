@@ -1,4 +1,3 @@
 pycountry
 seaborn
-streamlit
-st_aggrid
+ag-grid-community
