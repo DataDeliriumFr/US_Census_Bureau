@@ -110,7 +110,7 @@ if country:
         df2["% Rate"] = df2["% Rate"] * 100
 
         with st.expander(f"Interactive table of {country}"):
-            AgGrid(df2)
+            st.dataframe(df2)
 
     except json.decoder.JSONDecodeError:
         st.error("Country not referenced in U.S. Census Bureau database. Try another country.")
