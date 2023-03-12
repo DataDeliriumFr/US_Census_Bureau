@@ -1,3 +1,2 @@
 pycountry
 seaborn
-ag-grid-community
