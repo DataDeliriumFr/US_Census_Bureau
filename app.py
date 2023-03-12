@@ -3,7 +3,6 @@ from pycountry import countries
 import requests
 import json
 import pandas as pd
-from st_aggrid import AgGrid
 import seaborn as sns
 import matplotlib.pyplot as plt
 import io
