@@ -41,6 +41,7 @@ if country:
         # Wrangle data
         df1 = pd.DataFrame(columns=["Year", "Number of Births", "% Rate"])
         df1["Year"] = 2021 - df["AGE"].astype("int")
+        df1["Year"] = df1["Year"].astype("str")
         df1["Number of Births"] = df["POP"].astype("int")
         df1["% Rate"] = round(df1["Number of Births"].pct_change(periods=-1), 2)
 
@@ -57,22 +58,25 @@ if country:
         df1 = df1.loc[(df1["Year"] >= start_year) & (df1["Year"] <= end_year)]
 
         # Display metrics
-        col1, col2, col3, col4, col5 = st.columns(5)
+        col1, col2, col3, col4, col5, col6 = st.columns(6)
         with col2:
-            min_rate = df1["% Rate"].min()
-            min_index = df1["% Rate"].idxmin()
-            st.metric(label="Min. Rate Year",
-                      value=df1.loc[min_index, "Year"],
-                      delta=f"{min_rate:.1%}"
+            min_index = df1["Number of Births"].idxmin()
+            st.metric(label="Bottom Year",
+                      value=df1.loc[min_index, "Year"]
                       )
         with col3:
+            max_index = df1["Number of Births"].idxmax()
+            st.metric(label="Top Year",
+                      value=df1.loc[max_index, "Year"]
+                      )
+        with col4:
             max_rate = df1["% Rate"].max()
             max_index = df1["% Rate"].idxmax()
-            st.metric(label="Max. Rate Year",
+            st.metric(label="Top Rate Year",
                       value=df1.loc[max_index, "Year"],
                       delta=f"{max_rate:.1%}"
                       )
-        with col4:
+        with col5:
             average_rate = df1["% Rate"].mean()
             st.metric(label="Average Rate",
                       value=f"{average_rate:.1%}"
@@ -83,7 +87,7 @@ if country:
 
         # Generate and display graph
         plt.figure(figsize=(20, 7))
-        sns.barplot(data=df1, x=df1["Year"], y=df1["Number of Births"], color="#226094")
+        sns.barplot(data=df1, x=df1["Year"].astype("int"), y=df1["Number of Births"], color="#226094")
         plt.xticks(rotation=90)
         plt.title(f"U.S. Census Bureau - Yearly Birth Rate\n{country} ({start_year}-{end_year})")
         plt.xlabel("")
@@ -109,7 +113,7 @@ if country:
         df2["% Rate"] = df2["% Rate"] * 100
 
         with st.expander(f"Interactive table of {country}"):
-            st.dataframe(df2)
+            st.dataframe(data=df2, use_container_width=True)
 
     except json.decoder.JSONDecodeError:
         st.error("Country not referenced in U.S. Census Bureau database. Try another country.")
