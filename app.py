@@ -1,11 +1,8 @@
 import streamlit as st
-from pycountry import countries
-import requests
-import json
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-import io
+import numpy as np
+import plotly_express as px
+
 
 # Set app settings
 st.set_page_config(
@@ -13,107 +10,114 @@ st.set_page_config(
     layout="centered"
 )
 
-# App header
+# Display logo
 st.image("https://www.census.gov/mycd/application/images/census_doc_logo.png")
-st.subheader("Interactive Dashboard : Yearly Birth Rate (1921-2021)")
 
-# Create list of countries to select from
-country_list = [""]
-for country in countries:
-    name = country.name
-    country_list.append(name)
+# Initiate dataframe
+df = pd.read_csv("Yearly Births by Country.csv")
 
-country = st.selectbox("Select country to visualize data :", country_list)
+# Set up menu side bar
+menu_bar = st.sidebar
+menu_title = menu_bar.title("Interactive Dashboard")
+with menu_bar:
+    menu_input = st.radio("Explore data by :", ("worldwide overview", "continent", "country"))
 
-# Insert space
-st.write("")
+# Display graphs depending on user input
+if menu_input == "continent":
+    # Line plot of yearly births by continent
+    df_grouped = df.groupby(["Continent", "Year"]).agg({'Number of Births': np.sum}).reset_index()
+    fig_line = px.line(df_grouped, x="Year", y="Number of Births", color="Continent")
+    fig_line.update_layout(title_text='Yearly Births - Continents - Overview')
+    st.plotly_chart(fig_line, use_container_width=True)
 
-# Once country is selected...
-if country:
-    try:
-        # Fetch data
-        country_code = countries.get(name=country).alpha_2
-        url = f"https://api.census.gov/data/timeseries/idb/1year?get=NAME,AGE,POP,AREA_KM2&GENC={country_code}&YR=2021&SEX=0"
-        response = requests.get(url).json()
-        df = pd.DataFrame(response, columns=response[0])
-        df.drop(0, inplace=True)
+    with st.expander("**DRILL THROUGH A CONTINENT**"):
+        # User input : continent
+        continent_list = ["Africa", "Asia", "Europe", "North America", "South America"]
+        continent = st.selectbox("Select continent :", continent_list, 0)
+        df_continent = df[df["Continent"] == continent]
 
-        # Wrangle data
-        df1 = pd.DataFrame(columns=["Year", "Number of Births", "% Rate"])
-        df1["Year"] = 2021 - df["AGE"].astype("int")
-        df1["Year"] = df1["Year"].astype("str")
-        df1["Number of Births"] = df["POP"].astype("int")
-        df1["% Rate"] = round(df1["Number of Births"].pct_change(periods=-1), 2)
+        country_list = df_continent["Country"].unique().tolist()
+        countries = st.multiselect("Compare specific countries :", sorted(country_list))
+        graph_countries = " | ".join(sorted(countries))
+        df_countries = df_continent[df_continent["Country"].isin(countries)]
 
-        # Select time range
-        col1, col2 = st.columns(2)
-        with col1:
-            index_year_1921 = len(df1["Year"]) - 1
-            start_year = st.selectbox("Select start year :", df1["Year"], index=index_year_1921)
-        with col2:
-            end_year = st.selectbox("Select end year :", df1["Year"])
-        st.write("")
+        if countries:
+            # Plot animated choropleth map of selected countries only
+            fig_choro_countries = px.choropleth(df_countries,
+                                                locations="Country",
+                                                locationmode="country names",
+                                                color="Number of Births",
+                                                animation_frame="Year",
+                                                animation_group="Continent",
+                                                color_continuous_scale='teal',
+                                                range_color=[df_countries["Number of Births"].min(),
+                                                             df_countries["Number of Births"].max()],
+                                                scope=continent.lower())
+            fig_choro_countries.update_layout(title_text=f'Animated map of {graph_countries}',
+                                              geo=dict(showframe=False,
+                                                       showcoastlines=False)
+                                              )
+            fig_choro_countries.layout.updatemenus[0].buttons[0].args[1]['frame']['duration'] = 150
+            fig_choro_countries.layout.updatemenus[0].buttons[0].args[1]['transition']['duration'] = 5
+            st.plotly_chart(fig_choro_countries, use_container_width=True)
+        else:
+            # Insert space
+            st.write("")
+            # Plot animated choropleth map
+            fig_choro_continent = px.choropleth(df_continent,
+                                                locations="Country",
+                                                locationmode="country names",
+                                                color="Number of Births",
+                                                animation_frame="Year",
+                                                animation_group="Continent",
+                                                color_continuous_scale='teal',
+                                                range_color=[df_continent["Number of Births"].min(),
+                                                             df_continent["Number of Births"].max()],
+                                                scope=continent.lower())
+            fig_choro_continent.update_layout(title_text=f'Animated map of {continent}',
+                                              geo=dict(showframe=False,
+                                                       showcoastlines=False)
+                                              )
+            fig_choro_continent.layout.updatemenus[0].buttons[0].args[1]['frame']['duration'] = 150
+            fig_choro_continent.layout.updatemenus[0].buttons[0].args[1]['transition']['duration'] = 5
+            st.plotly_chart(fig_choro_continent, use_container_width=True)
 
-        # Filter dataframe based on selected time range
-        df1 = df1.loc[(df1["Year"] >= start_year) & (df1["Year"] <= end_year)]
+elif menu_input == "country":
+    country_list = df["Country"].unique().tolist()
+    countries_2 = st.multiselect("Enter one or multiple countries:", sorted(country_list))
+    countries_print = " | ".join(sorted(countries_2))
 
-        # Display metrics
-        col1, col2, col3, col4, col5, col6 = st.columns(6)
-        with col2:
-            min_index = df1["Number of Births"].idxmin()
-            st.metric(label="Bottom Year",
-                      value=df1.loc[min_index, "Year"]
-                      )
-        with col3:
-            max_index = df1["Number of Births"].idxmax()
-            st.metric(label="Top Year",
-                      value=df1.loc[max_index, "Year"]
-                      )
-        with col4:
-            max_rate = df1["% Rate"].max()
-            max_index = df1["% Rate"].idxmax()
-            st.metric(label="Top Rate Year",
-                      value=df1.loc[max_index, "Year"],
-                      delta=f"{max_rate:.1%}"
-                      )
-        with col5:
-            average_rate = df1["% Rate"].mean()
-            st.metric(label="Average Rate",
-                      value=f"{average_rate:.1%}"
-                      )
+    if countries_2:
+        try:
+            # Select time range
+            col1, col2 = st.columns(2)
+            with col1:
+                start_year = st.selectbox("Select start year :", df["Year"].unique())
+            with col2:
+                end_year = st.selectbox("Select end year :", df["Year"].unique(), 100)
+            st.write("")
+            # Filter dataframe based on selected time range
+            df_countries_2 = df.loc[
+                (df["Year"] >= start_year) & (df["Year"] <= end_year) & (df["Country"].isin(countries_2))]
 
-        # Insert space
-        st.write("")
+            # Insert space
+            st.write("")
 
-        # Generate and display graph
-        plt.figure(figsize=(20, 7))
-        sns.barplot(data=df1, x=df1["Year"].astype("int"), y=df1["Number of Births"], color="#226094")
-        plt.xticks(rotation=90)
-        plt.title(f"U.S. Census Bureau - Yearly Birth Rate\n{country} ({start_year}-{end_year})")
-        plt.xlabel("")
-        plt.show()
-        image = io.BytesIO()
-        plt.savefig(image, format='png')
+            # Generate and display graph
+            fig_line_country = px.line(df_countries_2,
+                                       x=df_countries_2["Year"],
+                                       y=df_countries_2["Number of Births"],
+                                       color=df_countries_2["Country"])
+            # fig_bar.update_traces(line=dict(color="#226094"))
+            fig_line_country.update_layout(title_text=f"Yearly Births of {countries_print} ({start_year} - {end_year})")
+            st.plotly_chart(fig_line_country, use_container_width=True)
 
-        st.set_option('deprecation.showPyplotGlobalUse', False)
-        st.pyplot()
-
-        # Display button to download graph
-        st.download_button(label="Download Graph",
-                           data=image,
-                           file_name=f"U.S. Census Bureau - Yearly Birth Rate - {country} ({start_year}-{end_year}).png",
-                           mime="png"
-                           )
-
-        # Insert space
-        st.write("")
-
-        # Copy dataframe, reformat data, display data
-        df2 = df1.copy()
-        df2["% Rate"] = df2["% Rate"] * 100
-
-        with st.expander(f"Interactive table of {country}"):
-            st.dataframe(data=df2, use_container_width=True)
-
-    except json.decoder.JSONDecodeError:
-        st.error("Country not referenced in U.S. Census Bureau database. Try another country.")
+        except:
+            st.write("Please enter correct range of years")
+else:
+    # Line Plot of global births
+    df_global = df.groupby("Year", as_index=False).sum()
+    fig_line_global = px.line(df_global, x="Year", y="Number of Births")
+    fig_line_global.update_traces(line=dict(color="#226094"))
+    fig_line_global.update_layout(title_text='Yearly Births - Worldwide')
+    st.plotly_chart(fig_line_global)
