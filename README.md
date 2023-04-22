@@ -10,11 +10,12 @@ This program is a Streamlit app that uses Python libraries such as Pandas, Numpy
 
 Here's an example of how to use the app:
 
-Select Continent from the menu.
-Drill down into a continent of your choice and select one or more countries.
-You will see an animated choropleth map of the yearly births for the selected countries.
-Select Country from the menu.
-Select one or more countries and a time range to see their yearly births in a line plot.
-Credits
+- Select Continent from the menu.
+- Drill down into a continent of your choice and select one or more countries.
+- You will see an animated choropleth map of the yearly births for the selected countries.
+- Select Country from the menu.
+- Select one or more countries and a time range to see their yearly births in a line plot.
+
+## Credits
 
 The app was created by Romain AGUER.
