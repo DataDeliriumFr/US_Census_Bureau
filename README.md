@@ -1,9 +1,19 @@
-# U.S. Census Bureau - Interactive Dashboard
+U.S. Census Bureau App
 
-As part of a selft-taught training, I wanted to combine API, data analysis and web app deployment into this project.
+This program is a Streamlit app that uses Python libraries such as Pandas, Numpy, and Plotly Express to display a dashboard with interactive visualizations of yearly birth data by country and continent. The data is loaded from a CSV file named "Yearly Births by Country.csv" generated from API requests to the U.S. Census Bureau.
 
-What does the app do ?
+Worldwide Overview: displays a line plot of the yearly births for all countries combined.
+Continent: displays a line plot of the yearly births for each continent and allows you to drill down into specific countries within the continent. If you select one or more countries, you can see an animated choropleth map of the yearly births by country.
+Country: allows you to select one or more countries and a time range to see their yearly births in a line plot.
+Example
 
-First of all, using Python, data from retrieved from a U.S. Census Bureau API to get yearly births of all countries referenced in the API.
+Here's an example of how to use the app:
 
-Then, on the web app itself, the user can visually explore data by continent or countries through various graphs.
+Select Continent from the menu.
+Drill down into a continent of your choice and select one or more countries.
+You will see an animated choropleth map of the yearly births for the selected countries.
+Select Country from the menu.
+Select one or more countries and a time range to see their yearly births in a line plot.
+Credits
+
+The app was created by Romain AGUER.
