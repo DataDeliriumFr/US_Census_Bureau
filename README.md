@@ -1,4 +1,4 @@
-U.S. Census Bureau App
+# U.S. Census Bureau App
 
 This program is a Streamlit app that uses Python libraries such as Pandas, Numpy, and Plotly Express to display a dashboard with interactive visualizations of yearly birth data by country and continent. The data is loaded from a CSV file named "Yearly Births by Country.csv" generated from API requests to the U.S. Census Bureau.
 
