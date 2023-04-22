@@ -27,9 +27,23 @@ with menu_bar:
 # Display graphs depending on user input
 if menu_input == "Continent":
     # If "Continent" is selected, then...
+
+    # Color theme of graphs
+    continent_colors = {
+        'Africa': px.colors.qualitative.Vivid[1],
+        'Asia': px.colors.qualitative.Vivid[0],
+        'Europe': px.colors.qualitative.Vivid[2],
+        'North America': px.colors.qualitative.Vivid[3],
+        'South America': px.colors.qualitative.Vivid[4]
+    }
+
     # Display line plot of continents
     df_grouped = df.groupby(["Continent", "Year"]).agg({'Number of Births': np.sum}).reset_index()
-    fig_line = px.line(df_grouped, x="Year", y="Number of Births", color="Continent")
+
+    fig_line = px.line(df_grouped, x="Year",
+                       y="Number of Births",
+                       color="Continent",
+                       color_discrete_map=continent_colors)
     fig_line.update_layout(title_text='Yearly Births - Continents - Overview')
     st.plotly_chart(fig_line, use_container_width=True)
 
@@ -48,13 +62,14 @@ if menu_input == "Continent":
 
         if countries:
             # Display animated choropleth map of selected countries only
+            color_scale = ["white", continent_colors[continent]]
             fig_choro_countries = px.choropleth(df_countries,
                                                 locations="Country",
                                                 locationmode="country names",
                                                 color="Number of Births",
                                                 animation_frame="Year",
                                                 animation_group="Continent",
-                                                color_continuous_scale='teal',
+                                                color_continuous_scale=color_scale,
                                                 range_color=[df_countries["Number of Births"].min(),
                                                              df_countries["Number of Births"].max()],
                                                 scope=continent.lower())
@@ -70,13 +85,14 @@ if menu_input == "Continent":
             st.write("")
 
             # Display animated choropleth map of whole continent
+            color_scale = ["white", continent_colors[continent]]
             fig_choro_continent = px.choropleth(df_continent,
                                                 locations="Country",
                                                 locationmode="country names",
                                                 color="Number of Births",
                                                 animation_frame="Year",
                                                 animation_group="Continent",
-                                                color_continuous_scale='teal',
+                                                color_continuous_scale=color_scale,
                                                 range_color=[df_continent["Number of Births"].min(),
                                                              df_continent["Number of Births"].max()],
                                                 scope=continent.lower())
@@ -114,9 +130,9 @@ elif menu_input == "Country":
             fig_line_country = px.line(df_countries_2,
                                        x=df_countries_2["Year"],
                                        y=df_countries_2["Number of Births"],
-                                       color=df_countries_2["Country"])
-            fig_line_country.update_layout(title_text=f"Yearly Births of {countries_print} ({start_year} - {end_year})",
-                                           plot_bgcolor='white')
+                                       color=df_countries_2["Country"],
+                                       color_discrete_sequence=px.colors.qualitative.Safe)
+            fig_line_country.update_layout(title_text=f"Yearly Births of {countries_print} ({start_year} - {end_year})")
             st.plotly_chart(fig_line_country, use_container_width=True)
 
         except:
